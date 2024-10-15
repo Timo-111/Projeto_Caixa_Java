@@ -11,6 +11,7 @@ public class ProjetoCaixaGUI {
     private JLabel valorCarrinhoLabel;
     private JPanel mainPanel;
     private JLabel logoLabel;
+    private JPanel buttonPanel;
 
     public ProjetoCaixaGUI() {
         estoque = new Estoque();
@@ -29,11 +30,15 @@ public class ProjetoCaixaGUI {
         mainPanel.setLayout(new BorderLayout());
 
         // Logo da lanchonete
-        logoLabel = new JLabel("Logo da Lanchonete", SwingConstants.CENTER);
+        logoLabel = new JLabel();
+        logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
         logoLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        ImageIcon logoIcon = new ImageIcon("C:/Users/timo7/Desktop/projeto java facul/Projeto Caixa/images/logoMate.jpg"); // Caminho atualizado da imagem
+        Image logoImage = logoIcon.getImage().getScaledInstance(500, 300, Image.SCALE_SMOOTH); // Redimensionar a imagem
+        logoLabel.setIcon(new ImageIcon(logoImage));
         mainPanel.add(logoLabel, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 3));
 
         JButton listarButton = new JButton("Listar Produtos");
@@ -88,7 +93,7 @@ public class ProjetoCaixaGUI {
         listarPanel.add(bebidasButton);
         listarPanel.add(salgadosButton);
 
-        mainPanel.remove(logoLabel);
+        mainPanel.removeAll();
         mainPanel.add(listarPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -104,9 +109,9 @@ public class ProjetoCaixaGUI {
         JScrollPane listScrollPane = new JScrollPane(produtoList);
 
         JPanel actionPanel = new JPanel();
-        actionPanel.setLayout(new GridLayout(3, 1));
+        actionPanel.setLayout(new GridLayout(4, 1)); // Ajustado para 4 linhas
 
-        valorCarrinhoLabel = new JLabel("Valor do Carrinho: R$ 0.0");
+        valorCarrinhoLabel = new JLabel("Valor do Carrinho: R$ " + venda.calcularTotal()); // Manter o valor do carrinho
         JButton adicionarCarrinhoButton = new JButton("Adicionar ao Carrinho");
         adicionarCarrinhoButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -121,9 +126,17 @@ public class ProjetoCaixaGUI {
             }
         });
 
+        JButton voltarButton = new JButton("Voltar");
+        voltarButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                voltarTelaInicial();
+            }
+        });
+
         actionPanel.add(valorCarrinhoLabel);
         actionPanel.add(adicionarCarrinhoButton);
         actionPanel.add(finalizarCompraButton);
+        actionPanel.add(voltarButton); // Adicionado botão Voltar
 
         listarProdutosPanel.add(listScrollPane, BorderLayout.CENTER);
         listarProdutosPanel.add(actionPanel, BorderLayout.SOUTH);
@@ -141,6 +154,14 @@ public class ProjetoCaixaGUI {
                 listModel.addElement(produto.getNome());
             }
         }
+    }
+
+    private void voltarTelaInicial() {
+        mainPanel.removeAll();
+        mainPanel.add(logoLabel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH); // Re-adiciona o painel de botões
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
     private void adicionarAoCarrinho(String categoria) {
