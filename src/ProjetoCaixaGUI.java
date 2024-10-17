@@ -51,7 +51,7 @@ public class ProjetoCaixaGUI {
         JButton adicionarButton = new JButton("Adicionar Produto");
         adicionarButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                abrirJanelaAdicionarProduto();
+                mostrarOpcoesAdicionarProduto();
             }
         });
 
@@ -156,48 +156,9 @@ public class ProjetoCaixaGUI {
         }
     }
 
-    private void voltarTelaInicial() {
-        mainPanel.removeAll();
-        mainPanel.add(logoLabel, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH); // Re-adiciona o painel de botões
-        mainPanel.revalidate();
-        mainPanel.repaint();
-    }
-
-    private void adicionarAoCarrinho(String categoria) {
-        String nome = produtoList.getSelectedValue();
-        if (nome != null) {
-            Produto produto = encontrarProdutoPorNome(nome);
-            if (produto != null) {
-                String quantidadeStr = JOptionPane.showInputDialog("Digite a quantidade:");
-                try {
-                    int quantidade = Integer.parseInt(quantidadeStr);
-                    if (categoria.equals("Salgados") || produto.getQuantidadeEstoque() >= quantidade) {
-                        venda.adicionarItem(produto, quantidade);
-                        if (categoria.equals("Bebidas")) {
-                            produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - quantidade);
-                        }
-                        atualizarValorCarrinho();
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Quantidade em estoque insuficiente.");
-                    }
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Por favor, insira uma quantidade válida.");
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Nenhum produto selecionado.");
-        }
-    }
-
-    private void atualizarValorCarrinho() {
-        valorCarrinhoLabel.setText("Valor do Carrinho: R$ " + venda.calcularTotal());
-    }
-
-    private void abrirJanelaAdicionarProduto() {
-        JFrame adicionarFrame = new JFrame("Adicionar Produto");
-        adicionarFrame.setSize(300, 200);
-        adicionarFrame.setLayout(new GridLayout(5, 2));
+    private void mostrarOpcoesAdicionarProduto() {
+        JPanel adicionarPanel = new JPanel();
+        adicionarPanel.setLayout(new GridLayout(6, 2));
 
         JLabel categoriaLabel = new JLabel("Categoria:");
         String[] categorias = {"Bebidas", "Salgados"};
@@ -241,25 +202,75 @@ public class ProjetoCaixaGUI {
                         estoque.adicionarProduto(new Produto(nome, preco, Integer.MAX_VALUE)); // Quantidade infinita para salgados
                     }
 
-                    adicionarFrame.dispose();
+                    voltarTelaInicial();
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(adicionarFrame, "Por favor, insira valores válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(mainPanel, "Por favor, insira valores válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
-        adicionarFrame.add(categoriaLabel);
-        adicionarFrame.add(categoriaComboBox);
-        adicionarFrame.add(nomeLabel);
-        adicionarFrame.add(nomeField);
-        adicionarFrame.add(precoLabel);
-        adicionarFrame.add(precoField);
-        adicionarFrame.add(quantidadeLabel);
-        adicionarFrame.add(quantidadeField);
-        adicionarFrame.add(new JLabel()); // Placeholder
-        adicionarFrame.add(adicionarButton);
+        JButton voltarButton = new JButton("Voltar");
+        voltarButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                voltarTelaInicial();
+            }
+        });
 
-        adicionarFrame.setVisible(true);
+        adicionarPanel.add(categoriaLabel);
+        adicionarPanel.add(categoriaComboBox);
+        adicionarPanel.add(nomeLabel);
+        adicionarPanel.add(nomeField);
+        adicionarPanel.add(precoLabel);
+        adicionarPanel.add(precoField);
+        adicionarPanel.add(quantidadeLabel);
+        adicionarPanel.add(quantidadeField);
+        adicionarPanel.add(new JLabel()); // Placeholder
+        adicionarPanel.add(adicionarButton);
+        adicionarPanel.add(new JLabel()); // Placeholder
+        adicionarPanel.add(voltarButton);
+
+        mainPanel.removeAll();
+        mainPanel.add(adicionarPanel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
+    private void voltarTelaInicial() {
+        mainPanel.removeAll();
+        mainPanel.add(logoLabel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH); // Re-adiciona o painel de botões
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
+    private void adicionarAoCarrinho(String categoria) {
+        String nome = produtoList.getSelectedValue();
+        if (nome != null) {
+            Produto produto = encontrarProdutoPorNome(nome);
+            if (produto != null) {
+                String quantidadeStr = JOptionPane.showInputDialog("Digite a quantidade:");
+                try {
+                    int quantidade = Integer.parseInt(quantidadeStr);
+                    if (categoria.equals("Salgados") || produto.getQuantidadeEstoque() >= quantidade) {
+                        venda.adicionarItem(produto, quantidade);
+                        if (categoria.equals("Bebidas")) {
+                            produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - quantidade);
+                        }
+                        atualizarValorCarrinho();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Quantidade em estoque insuficiente.");
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Por favor, insira uma quantidade válida.");
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Nenhum produto selecionado.");
+        }
+    }
+
+    private void atualizarValorCarrinho() {
+        valorCarrinhoLabel.setText("Valor do Carrinho: R$ " + venda.calcularTotal());
     }
 
     private void finalizarVenda() {
