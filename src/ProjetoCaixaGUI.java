@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ProjetoCaixaGUI {
     private Estoque estoque;
@@ -12,15 +15,11 @@ public class ProjetoCaixaGUI {
     private JPanel mainPanel;
     private JLabel logoLabel;
     private JPanel buttonPanel;
+    private static final String ESTOQUE_FILE = "estoque.ser";
 
     public ProjetoCaixaGUI() {
-        estoque = new Estoque();
+        estoque = carregarEstoque();
         venda = new Venda();
-
-        // Adicionando alguns produtos ao estoque
-        estoque.adicionarProduto(new Produto("Refrigerante", 3.0, 20));
-        estoque.adicionarProduto(new Produto("Suco", 4.0, 15));
-        estoque.adicionarProduto(new Produto("Coxinha", 5.0, Integer.MAX_VALUE)); // Salgado com estoque infinito
 
         JFrame frame = new JFrame("Caixa de Lanchonete");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -39,7 +38,7 @@ public class ProjetoCaixaGUI {
         mainPanel.add(logoLabel, BorderLayout.CENTER);
 
         buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(1, 3));
+        buttonPanel.setLayout(new GridLayout(1, 3)); // Ajustado para 3 botões
 
         JButton listarButton = new JButton("Listar Produtos");
         listarButton.addActionListener(new ActionListener() {
@@ -74,7 +73,7 @@ public class ProjetoCaixaGUI {
 
     private void mostrarOpcoesDeListagem() {
         JPanel listarPanel = new JPanel();
-        listarPanel.setLayout(new GridLayout(1, 2));
+        listarPanel.setLayout(new GridLayout(1, 3)); // Ajustado para 3 botões
 
         JButton bebidasButton = new JButton("Bebidas");
         bebidasButton.addActionListener(new ActionListener() {
@@ -90,8 +89,16 @@ public class ProjetoCaixaGUI {
             }
         });
 
+        JButton docesButton = new JButton("Doces");
+        docesButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                listarProdutos("Doces");
+            }
+        });
+
         listarPanel.add(bebidasButton);
         listarPanel.add(salgadosButton);
+        listarPanel.add(docesButton); // Adicionado botão Doces
 
         mainPanel.removeAll();
         mainPanel.add(listarPanel, BorderLayout.CENTER);
@@ -109,34 +116,60 @@ public class ProjetoCaixaGUI {
         JScrollPane listScrollPane = new JScrollPane(produtoList);
 
         JPanel actionPanel = new JPanel();
-        actionPanel.setLayout(new GridLayout(4, 1)); // Ajustado para 4 linhas
+        actionPanel.setLayout(new GridLayout(2, 2, 10, 10)); // Usar GridLayout para 2x2 botões com espaçamento
 
         valorCarrinhoLabel = new JLabel("Valor do Carrinho: R$ " + venda.calcularTotal()); // Manter o valor do carrinho
-        JButton adicionarCarrinhoButton = new JButton("Adicionar ao Carrinho");
+
+        // Redimensionar ícones
+        ImageIcon addIcon = new ImageIcon(new ImageIcon("C:/Users/timo7/Desktop/projeto java facul/Projeto Caixa/images/add_icon.png").getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH));
+        ImageIcon cartIcon = new ImageIcon(new ImageIcon("C:/Users/timo7/Desktop/projeto java facul/Projeto Caixa/images/cart_icon.png").getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
+        ImageIcon deleteIcon = new ImageIcon(new ImageIcon("C:/Users/timo7/Desktop/projeto java facul/Projeto Caixa/images/delete_icon.png").getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
+        ImageIcon backIcon = new ImageIcon(new ImageIcon("C:/Users/timo7/Desktop/projeto java facul/Projeto Caixa/images/back_icon.png").getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
+
+        JButton adicionarCarrinhoButton = new JButton("Adicionar", addIcon);
+        adicionarCarrinhoButton.setToolTipText("Adicionar ao Carrinho");
+        adicionarCarrinhoButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+        adicionarCarrinhoButton.setVerticalTextPosition(SwingConstants.CENTER);
         adicionarCarrinhoButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 adicionarAoCarrinho(categoria);
             }
         });
 
-        JButton finalizarCompraButton = new JButton("Finalizar Compra");
+        JButton finalizarCompraButton = new JButton("Finalizar", cartIcon);
+        finalizarCompraButton.setToolTipText("Finalizar Compra");
+        finalizarCompraButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+        finalizarCompraButton.setVerticalTextPosition(SwingConstants.CENTER);
         finalizarCompraButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 finalizarVenda();
             }
         });
 
-        JButton voltarButton = new JButton("Voltar");
+        JButton removerProdutoButton = new JButton("Remover", deleteIcon);
+        removerProdutoButton.setToolTipText("Remover Produto");
+        removerProdutoButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+        removerProdutoButton.setVerticalTextPosition(SwingConstants.CENTER);
+        removerProdutoButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                removerProduto(categoria);
+            }
+        });
+
+        JButton voltarButton = new JButton("Voltar", backIcon);
+        voltarButton.setToolTipText("Voltar");
+        voltarButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+        voltarButton.setVerticalTextPosition(SwingConstants.CENTER);
         voltarButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 voltarTelaInicial();
             }
         });
 
-        actionPanel.add(valorCarrinhoLabel);
         actionPanel.add(adicionarCarrinhoButton);
         actionPanel.add(finalizarCompraButton);
-        actionPanel.add(voltarButton); // Adicionado botão Voltar
+        actionPanel.add(removerProdutoButton);
+        actionPanel.add(voltarButton);
 
         listarProdutosPanel.add(listScrollPane, BorderLayout.CENTER);
         listarProdutosPanel.add(actionPanel, BorderLayout.SOUTH);
@@ -149,8 +182,7 @@ public class ProjetoCaixaGUI {
 
         listModel.clear();
         for (Produto produto : estoque.getProdutos()) {
-            if ((categoria.equals("Bebidas") && produto.getQuantidadeEstoque() != Integer.MAX_VALUE) ||
-                (categoria.equals("Salgados") && produto.getQuantidadeEstoque() == Integer.MAX_VALUE)) {
+            if (produto.getCategoria().equals(categoria)) {
                 listModel.addElement(produto.getNome());
             }
         }
@@ -161,7 +193,7 @@ public class ProjetoCaixaGUI {
         adicionarPanel.setLayout(new GridLayout(6, 2));
 
         JLabel categoriaLabel = new JLabel("Categoria:");
-        String[] categorias = {"Bebidas", "Salgados"};
+        String[] categorias = {"Bebidas", "Salgados", "Doces"};
         JComboBox<String> categoriaComboBox = new JComboBox<>(categorias);
 
         JLabel nomeLabel = new JLabel("Nome:");
@@ -177,7 +209,7 @@ public class ProjetoCaixaGUI {
         categoriaComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String categoria = (String) categoriaComboBox.getSelectedItem();
-                if (categoria.equals("Salgados")) {
+                if (categoria.equals("Salgados") || categoria.equals("Doces")) {
                     quantidadeLabel.setVisible(false);
                     quantidadeField.setVisible(false);
                 } else {
@@ -197,11 +229,12 @@ public class ProjetoCaixaGUI {
 
                     if (categoria.equals("Bebidas")) {
                         int quantidade = Integer.parseInt(quantidadeField.getText());
-                        estoque.adicionarProduto(new Produto(nome, preco, quantidade));
+                        estoque.adicionarProduto(new Produto(nome, preco, quantidade, categoria));
                     } else {
-                        estoque.adicionarProduto(new Produto(nome, preco, Integer.MAX_VALUE)); // Quantidade infinita para salgados
+                        estoque.adicionarProduto(new Produto(nome, preco, Integer.MAX_VALUE, categoria)); // Quantidade infinita para salgados e doces
                     }
 
+                    salvarEstoque();
                     voltarTelaInicial();
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(mainPanel, "Por favor, insira valores válidos.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -251,7 +284,7 @@ public class ProjetoCaixaGUI {
                 String quantidadeStr = JOptionPane.showInputDialog("Digite a quantidade:");
                 try {
                     int quantidade = Integer.parseInt(quantidadeStr);
-                    if (categoria.equals("Salgados") || produto.getQuantidadeEstoque() >= quantidade) {
+                    if (categoria.equals("Salgados") || categoria.equals("Doces") || produto.getQuantidadeEstoque() >= quantidade) {
                         venda.adicionarItem(produto, quantidade);
                         if (categoria.equals("Bebidas")) {
                             produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - quantidade);
@@ -263,6 +296,20 @@ public class ProjetoCaixaGUI {
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Por favor, insira uma quantidade válida.");
                 }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Nenhum produto selecionado.");
+        }
+    }
+
+    private void removerProduto(String categoria) {
+        String nome = produtoList.getSelectedValue();
+        if (nome != null) {
+            Produto produto = encontrarProdutoPorNome(nome);
+            if (produto != null) {
+                estoque.getProdutos().remove(produto);
+                salvarEstoque();
+                listarProdutos(categoria);
             }
         } else {
             JOptionPane.showMessageDialog(null, "Nenhum produto selecionado.");
@@ -286,6 +333,27 @@ public class ProjetoCaixaGUI {
             }
         }
         return null;
+    }
+
+    private void salvarEstoque() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(ESTOQUE_FILE))) {
+            oos.writeObject(new ArrayList<>(estoque.getProdutos()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Estoque carregarEstoque() {
+        Estoque estoque = new Estoque();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ESTOQUE_FILE))) {
+            List<Produto> produtos = (List<Produto>) ois.readObject();
+            for (Produto produto : produtos) {
+                estoque.adicionarProduto(produto);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            // Se o arquivo não existir ou houver um erro, retornamos um estoque vazio
+        }
+        return estoque;
     }
 
     public static void main(String[] args) {

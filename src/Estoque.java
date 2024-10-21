@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Estoque {
+public class Estoque implements Serializable {
     private List<Produto> produtos;
 
     public Estoque() {
