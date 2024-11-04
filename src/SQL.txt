@@ -1,0 +1,8 @@
+CREATE TABLE produtos(prod_id INT AUTO_INCREMENT PRIMARY KEY, nome varchar(255), marca varchar(255), categoria varchar(8), preco float , quant_estoque INT);
+CREATE TABLE vendas(venda_id INT AUTO_INCREMENT PRIMARY KEY, data varchar(20),total float, nome_cons varchar(255), cpf_cons varchar(255));
+CREATE TABLE prod_venda(prvendvenda_id INT PRIMARY KEY, FOREIGN KEY (prvendvenda_id) REFERENCES vendas(venda_id) ,prvendprod_id INT, FOREIGN KEY (prvendprod_id) REFERENCES produtos(prod_id), quant INT);
+
+
+SELECT * FROM produtos WHERE nome='%s';
+INSERT INTO produtos(nome, categoria, marca, preco) VALUES('%s','%s','%s',%f);
+UPDATE produtos SET categoria='%s', marca='%s', preco='%s', quant_estoque='%s' WHERE nome='%s';
